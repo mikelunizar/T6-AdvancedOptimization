@@ -125,7 +125,7 @@ def train(config=None):
     # Trainer
     trainer = pl.Trainer(
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
-        max_epochs=5,
+        max_epochs=100,
         logger=wandb_logger,
         callbacks=[checkpoint_callback],
         deterministic=True,
