@@ -13,6 +13,7 @@ from torch.utils.data import TensorDataset
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 import numpy as np
+from torch import nn
 
 def load_mnist(fraction=0.25):
     transform = transforms.ToTensor()
@@ -55,20 +56,37 @@ class LitMNIST(pl.LightningModule):
         # save hyperparameters
         self.save_hyperparameters()
 
-        # set architecture
-        model = [torch.nn.Flatten(),
-                 torch.nn.Linear(28 * 28, hidden),
-                 torch.nn.ReLU(),
-                 torch.nn.Dropout(p=dropout)]  # Dropout after each ReLU
+        self.model = nn.Sequential(
+            # Feature extractor
+            nn.Conv2d(1, hidden//2, kernel_size=3, padding=1),  # 1x28x28 -> 32x28x28
+            nn.ReLU(),
+            nn.Conv2d(hidden//2, hidden, kernel_size=3, padding=1),  # 32x28x28 -> 64x28x28
+            nn.ReLU(),
+            nn.MaxPool2d(2, 2),  # 64x28x28 -> 64x14x14
+            nn.Dropout(dropout),
+            nn.Flatten(),  # 64x14x14 = 12544
 
-        for i in range(layers - 2):
-            model.append(torch.nn.Linear(hidden, hidden))
-            model.append(torch.nn.ReLU())
-            model.append(torch.nn.Dropout(p=dropout))  # Dropout after each ReLU
+            # Classifier
+            nn.Linear(hidden * 14 * 14, hidden*2),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(hidden*2, 10)
+        )
 
-        model.append(torch.nn.Linear(hidden, 10))  # Final output layer without dropout
+        # # set architecture
+        # model = [torch.nn.Flatten(),
+        #          torch.nn.Linear(28 * 28, hidden),
+        #          torch.nn.ReLU(),
+        #          torch.nn.Dropout(p=dropout)]  # Dropout after each ReLU
+        #
+        # for i in range(layers - 2):
+        #     model.append(torch.nn.Linear(hidden, hidden))
+        #     model.append(torch.nn.ReLU())
+        #     model.append(torch.nn.Dropout(p=dropout))  # Dropout after each ReLU
+        #
+        # model.append(torch.nn.Linear(hidden, 10))  # Final output layer without dropout
 
-        self.model = torch.nn.Sequential(*model)
+        #self.model = torch.nn.Sequential(*model)
 
     def forward(self, x):
         return self.model(x)
