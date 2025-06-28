@@ -125,7 +125,7 @@ def train(config=None):
     # Trainer
     trainer = pl.Trainer(
         accelerator="gpu" if torch.cuda.is_available() else "cpu",
-        max_epochs=100,
+        max_epochs=200,
         logger=wandb_logger,
         callbacks=[checkpoint_callback],
         deterministic=True,
@@ -149,13 +149,16 @@ if __name__ == '__main__':
                 "values": [1e-3]
             },
             "hidden": {
-                "values": [1024, 2048]
+                "values": [64, 128, 256, 512, 1024]
             },
             "dropout": {
-                "values": [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.45, 0.5]
+                "distribution": "q_uniform",
+                "q": 0.01,
+                "min": 0.,
+                "max": 0.5
             },
             "layers": {
-                "values": [4, 8, 16]
+                "values": [2]
             },
             "optimizer": {
                 "values": ["Adam"]
