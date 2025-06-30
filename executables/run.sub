@@ -2,7 +2,7 @@
 
 
 
-executable              = src/executables/train.sh
+executable              = executables/train.sh
 
 log                     = run.log
 
